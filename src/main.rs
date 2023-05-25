@@ -1,15 +1,13 @@
+mod app;
+mod ui;
+
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{io, thread, time::Duration};
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, Widget},
-    Terminal,
-};
+use std::io;
+use tui::{backend::CrosstermBackend, Terminal};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
@@ -18,15 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    terminal.draw(|term| {
-        let size = term.size();
-
-        let block = Block::default().title("Ratui").borders(Borders::ALL);
-
-        term.render_widget(block, size);
-    })?;
-
-    thread::sleep(Duration::from_millis(10000));
+    app::run(&mut terminal)?;
 
     disable_raw_mode()?;
     execute!(
