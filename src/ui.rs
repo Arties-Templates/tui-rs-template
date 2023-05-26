@@ -2,8 +2,8 @@ use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
-    text::{Span, Spans},
-    widgets::{canvas::Line, Block, Borders, Cell, Row, Table, Tabs},
+    text::{Span, Spans, Text},
+    widgets::{Block, Borders, Cell, Paragraph, Row, Table, Tabs, Wrap},
     Frame,
 };
 
@@ -11,7 +11,13 @@ use super::{app, common::table_headers};
 
 macro_rules! render {
     ($renderer:ident, $widget:expr, $chunk:expr) => {
-        $renderer.render_widget($widget, $chunk);
+        $renderer.render_widget($widget, $chunk)
+    };
+}
+
+macro_rules! render_stateful {
+    ($renderer:ident, $widget:expr, $chunk:expr, $state:expr) => {
+        $renderer.render_stateful_widget($widget, $chunk, $state)
     };
 }
 
@@ -40,14 +46,16 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
             ])
         })
         .collect::<Vec<Spans>>();
-    let tabs = Tabs::new(titles)
-        .block(Block::default().borders(Borders::ALL))
-        .highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
-        .style(Style::default().bg(Color::Black))
-        .select(app.tab_index);
 
-    term.render_widget(tabs, chunks[0]);
-
+    render!(
+        term,
+        Tabs::new(titles)
+            .block(Block::default().borders(Borders::ALL))
+            .highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
+            .style(Style::default().bg(Color::Black))
+            .select(app.tab_index),
+        chunks[0]
+    );
 
     let rows = app.items.iter().map(|v| {
         let height = v
@@ -59,21 +67,42 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
         let cells = v.iter().map(|c| Cell::from(*c));
         Row::new(cells).height(height as u16)
     });
-    let table = Table::new(rows)
-        .header(Row::new(table_headers()))
-        .block(Block::default().borders(Borders::ALL).title("Tables"))
-        .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
-        .highlight_symbol(">) ")
-        .widths(&[
-            Constraint::Percentage(15),
-            Constraint::Length(25),
-            Constraint::Min(10),
-        ]);
-    term.render_stateful_widget(table, chunks[1], &mut app.state);
 
-    let block = Block::default()
-        .title("Ratui")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-    term.render_widget(block, chunks[2]);
+    render_stateful!(
+        term,
+        Table::new(rows)
+            .header(Row::new(table_headers()))
+            .block(Block::default().borders(Borders::ALL).title("Tables"))
+            .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
+            .highlight_symbol(">) ")
+            .widths(&[
+                Constraint::Percentage(15),
+                Constraint::Length(25),
+                Constraint::Min(10),
+            ]),
+        chunks[1],
+        &mut app.state
+    );
+
+    if app.tab_index == 1 {
+        render!(
+            term,
+            Block::default()
+                .title("Ratui")
+                .title_alignment(Alignment::Center)
+                .borders(Borders::ALL),
+            chunks[2]
+        );
+    } else {
+        render!(
+            term,
+            Paragraph::new(Text::styled(
+                "You should move to the Secondary Tab!",
+                Style::default().fg(Color::Cyan)
+            ))
+            .alignment(Alignment::Left)
+            .wrap(Wrap { trim: true }),
+            chunks[2]
+        )
+    }
 }
