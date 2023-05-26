@@ -3,7 +3,7 @@ mod macros;
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
     widgets::{Block, Borders, Cell, Paragraph, Row, Table, Tabs, Wrap},
     Frame,
@@ -18,7 +18,7 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
         .margin(2)
         .constraints(
             [
-                Constraint::Length(10),
+                Constraint::Length(3),
                 Constraint::Percentage(50),
                 Constraint::Length(30),
             ]
@@ -43,7 +43,7 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
         Tabs::new(titles)
             .block(Block::default().borders(Borders::ALL))
             .highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
-            .divider("||")
+            .divider("< >")
             .style(Style::default().bg(Color::Black))
             .select(app.tab_index),
         chunks[0]
@@ -64,7 +64,11 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
         term,
         Table::new(rows)
             .header(Row::new(table_headers()))
-            .block(Block::default().borders(Borders::ALL).title("Tables"))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Ratui | Tables")
+            )
             .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
             .highlight_symbol(">) ")
             .widths(&[
@@ -97,7 +101,9 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
             term,
             Paragraph::new(Text::styled(
                 "You should move to the Secondary Tab!",
-                Style::default().fg(Color::Cyan)
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::SLOW_BLINK)
             ))
             .alignment(Alignment::Left)
             .wrap(Wrap { trim: true }),
