@@ -14,6 +14,7 @@ impl<'a> App<'a> {
             items: vec![
                 vec!["Hello, World!", "Goodbye Universe"],
                 vec!["Hello Earth!", "Goodby Mars"],
+                vec!["Starship", "Dest: Pluto", "ETA: 7months"]
             ],
             state: TableState::default(),
         }
@@ -48,6 +49,10 @@ impl<'a> App<'a> {
 
         self.state.select(Some(i));
     }
+
+    pub fn unselect(&mut self) {
+      self.state.select(None)
+    }
 }
 
 pub fn run<B: Backend>(term: &mut Terminal<B>, mut app: app::App) -> std::io::Result<()> {
@@ -59,8 +64,9 @@ pub fn run<B: Backend>(term: &mut Terminal<B>, mut app: app::App) -> std::io::Re
                 #[allow(clippy::single_match)]
                 match key.code {
                     KeyCode::Char('q') => return Ok(()),
-                    KeyCode::Up => app.next(),
-                    KeyCode::Down => app.previous(),
+                    KeyCode::Up => app.previous(),
+                    KeyCode::Down => app.next(),
+                    KeyCode::Backspace => app.unselect(),
                     _ => {}
                 }
             }

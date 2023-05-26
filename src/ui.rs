@@ -15,12 +15,12 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
         .constraints(
             [
                 Constraint::Percentage(50),
-                Constraint::Length(10),
-                Constraint::Percentage(30),
+                Constraint::Length(30),
             ]
             .as_ref(),
         )
         .split(term.size());
+
     let rows = app.items.iter().map(|v| {
         let height = v
             .iter()
@@ -42,14 +42,10 @@ pub fn render<B: Backend>(term: &mut Frame<B>, app: &mut app::App) {
             Constraint::Min(10),
         ]);
     term.render_stateful_widget(table, chunks[0], &mut app.state);
+    
     let block = Block::default()
         .title("Ratui")
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
     term.render_widget(block, chunks[1]);
-
-    let block2 = Block::default()
-        .title("Ratui Block 2")
-        .borders(Borders::ALL);
-    term.render_widget(block2, chunks[2]);
 }
