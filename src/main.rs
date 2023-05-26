@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     let app = app::App::new();
-    app::run(&mut terminal, app)?;
+    let res = app::run(&mut terminal, app);
 
     disable_raw_mode()?;
     execute!(
@@ -27,6 +27,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         DisableMouseCapture,
     )?;
     terminal.show_cursor()?;
+
+    if let Err(why) = res {
+      println!("Something went wrong!\n{why:?}");
+    }
 
     Ok(())
 }
