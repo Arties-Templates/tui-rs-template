@@ -1,11 +1,19 @@
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use tui::{backend::Backend, Terminal};
 
-use super::ui;
+use super::{app, ui};
 
-pub fn run<B: Backend>(term: &mut Terminal<B>) -> std::io::Result<()> {
+pub struct App;
+
+impl App {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+pub fn run<B: Backend>(term: &mut Terminal<B>, app: app::App) -> std::io::Result<()> {
     loop {
-        term.draw(ui::render)?;
+        term.draw(|f| ui::render(f, &app))?;
 
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
